@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Picker } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useLocalization } from './LocalizationContext'; // Імпорт контексту
 
 const EditTaskScreen = ({ route, navigation }) => {
   const { task, index, date, tasks } = route.params;
   const [editedTask, setEditedTask] = useState(task);
-
-  const { language, setLanguage, t } = useLocalization();
 
   const saveEditedTask = async () => {
     const updatedTasks = [...tasks];
     updatedTasks[index] = editedTask;
 
     await AsyncStorage.setItem(`tasks-${date}`, JSON.stringify(updatedTasks));
-    navigation.goBack(); // повертаємось до TaskList
+    navigation.goBack();
   };
 
   const deleteTask = async () => {
@@ -25,29 +22,16 @@ const EditTaskScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('editTask')}</Text>
-
-      {/* Вибір мови */}
-      <View style={styles.languagePicker}>
-        <Text style={{ color: '#fff', marginRight: 10 }}>Language:</Text>
-        <Picker
-          selectedValue={language}
-          style={{ height: 50, width: 150, color: '#fff' }}
-          onValueChange={(itemValue) => setLanguage(itemValue)}
-          mode="dropdown"
-        >
-          <Picker.Item label="Українська" value="uk" />
-          <Picker.Item label="English" value="en" />
-        </Picker>
-      </View>
-
+      <Text style={styles.title}>Редагувати завдання</Text>
       <TextInput
         style={styles.input}
         value={editedTask}
         onChangeText={setEditedTask}
       />
-      <Button title={t('save')} onPress={saveEditedTask} />
-      <Button title={t('delete')} onPress={deleteTask} color="#ff5555" />
+      <Button title="Зберегти" onPress={saveEditedTask} />
+      <View style={styles.deleteButton}>
+        <Button title="Видалити" onPress={deleteTask} color="#ff5555" />
+      </View>
     </View>
   );
 };
@@ -55,27 +39,27 @@ const EditTaskScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#2e2e2e',
+    backgroundColor: '#ffffff', // світлий фон
     flex: 1,
     justifyContent: 'center',
   },
   title: {
     fontSize: 22,
-    color: '#fff',
+    color: '#000000', // чорний текст
     marginBottom: 20,
     textAlign: 'center',
   },
   input: {
-    backgroundColor: '#3a3a3a',
-    color: '#fff',
+    backgroundColor: '#f0f0f0', // світлий input
+    color: '#000000',
     padding: 10,
     marginBottom: 20,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#cccccc',
   },
-  languagePicker: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
+  deleteButton: {
+    marginTop: 10,
   },
 });
 

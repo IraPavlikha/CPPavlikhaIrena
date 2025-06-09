@@ -1,77 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, Button, View } from 'react-native';
-import Calendar from './src/components/Calendar';
-import AuthScreen from './src/components/AuthScreen';
-import { LanguageProvider } from './src/components/LanguageContext';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeProvider, useTheme } from './src/components/ThemeContext'; // контекст теми
 
-const AppContent: React.FC = () => {
-  const { theme, toggleTheme } = useTheme(); // Отримуємо доступ до теми
+import AuthScreen from './src/screens/AuthScreen';
+import ReportsScreen from './src/screens/ReportsScreen';
+import AddViolationScreen from './src/screens/AddViolationScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
+
+const Tab = createBottomTabNavigator();
+
+export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    avatarUrl: '',
+  });
 
+  // Автоматичне завантаження користувача при запуску
   useEffect(() => {
-    const checkUser = async () => {
-      const user = await AsyncStorage.getItem('currentUser');
-      if (user) setIsLoggedIn(true);
+    const loadUser = async () => {
+      try {
+        const savedUser = await AsyncStorage.getItem('userData');
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser);
+          setUserData(parsedUser);
+          setIsLoggedIn(true);
+        }
+      } catch (error) {
+        console.error('Помилка при завантаженні даних користувача:', error);
+      }
     };
-    checkUser();
+
+    loadUser();
   }, []);
 
-  const handleLogin = async () => {
-    await AsyncStorage.setItem('currentUser', 'userData');
-    setIsLoggedIn(true);
+  const handleLogin = async (user) => {
+    try {
+      await AsyncStorage.setItem('userData', JSON.stringify(user));
+      setUserData(user);
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.error('Помилка при збереженні даних користувача:', error);
+    }
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('currentUser');
+    try {
+      await AsyncStorage.removeItem('userData');
+    } catch (error) {
+      console.error('Помилка при видаленні даних користувача:', error);
+    }
+    setUserData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      avatarUrl: '',
+    });
     setIsLoggedIn(false);
   };
 
-  const containerStyle = theme === 'light' ? styles.containerLight : styles.containerDark;
-  const buttonColor = theme === 'light' ? '#000' : '#fff';
-
-  if (!isLoggedIn) {
-    return <AuthScreen onLogin={handleLogin} />;
-  }
+  const handleUserUpdate = async (updatedUser) => {
+    try {
+      await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
+      setUserData(updatedUser);
+    } catch (error) {
+      console.error('Помилка при оновленні даних користувача:', error);
+    }
+  };
 
   return (
-    <SafeAreaView style={containerStyle}>
-      <Calendar theme={theme} />
-      <View style={styles.buttonContainer}>
-        <Button title="Log Out" onPress={handleLogout} color={buttonColor} />
-        <Button title="Toggle Theme" onPress={toggleTheme} color={buttonColor} />
-      </View>
-    </SafeAreaView>
+    <NavigationContainer>
+      {isLoggedIn ? (
+        <Tab.Navigator screenOptions={{ headerShown: false }}>
+          <Tab.Screen name="Звіти" component={ReportsScreen} />
+          <Tab.Screen name="Додати" component={AddViolationScreen} />
+          <Tab.Screen name="Налаштування">
+            {props => (
+              <SettingsScreen
+                {...props}
+                userData={userData}
+                onLogout={handleLogout}
+                onUpdateUser={handleUserUpdate}
+              />
+            )}
+          </Tab.Screen>
+        </Tab.Navigator>
+      ) : (
+        <AuthScreen onLogin={handleLogin} />
+      )}
+    </NavigationContainer>
   );
-};
-
-const App: React.FC = () => {
-  return (
-    <ThemeProvider>
-      <LanguageProvider>
-              <AppContent />
-      </LanguageProvider>
-    </ThemeProvider>
-  );
-};
-
-const styles = StyleSheet.create({
-  containerLight: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    paddingTop: 20,
-  },
-  containerDark: {
-    flex: 1,
-    backgroundColor: '#222',
-    paddingTop: 20,
-  },
-  buttonContainer: {
-    marginTop: 20,
-    paddingHorizontal: 20,
-    gap: 10,
-  },
-});
-
-export default App;
+}

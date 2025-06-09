@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Theme } from './theme';
 
 interface HeaderProps {
   month: string;
@@ -9,7 +8,6 @@ interface HeaderProps {
   onNextMonth: () => void;
   onToday: () => void;
   currentDate: Date;
-  theme: Theme;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -19,7 +17,6 @@ const Header: React.FC<HeaderProps> = ({
   onNextMonth,
   onToday,
   currentDate,
-  theme
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [currentDay, setCurrentDay] = useState<string>('');
@@ -44,36 +41,28 @@ const Header: React.FC<HeaderProps> = ({
     return () => clearInterval(intervalId);
   }, []);
 
-  const textColor = theme === 'dark' ? '#fff' : '#000';
-
   return (
-    <View style={[styles.header, { backgroundColor: theme === 'dark' ? '#333' : '#fff' }]}>
+    <View style={styles.header}>
       <View style={styles.timeContainer}>
-        <Text style={[styles.time, { color: textColor }]}>{currentTime}</Text>
-        <Text style={[styles.day, { color: textColor }]}>{currentDay}</Text>
+        <Text style={styles.time}>{currentTime}</Text>
+        <Text style={styles.day}>{currentDay}</Text>
       </View>
 
       <View style={styles.mainContent}>
         <TouchableOpacity onPress={onPrevMonth}>
-          <Text style={[styles.arrow, { color: textColor }]}>{"△"}</Text>
+          <Text style={styles.arrow}>{"△"}</Text>
         </TouchableOpacity>
 
-        <Text
-          style={[
-            styles.title,
-            { color: textColor },
-            isToday && styles.todayHighlight
-          ]}
-        >
+        <Text style={[styles.title, isToday && styles.todayHighlight]}>
           {month} {year}
         </Text>
 
         <TouchableOpacity onPress={onNextMonth}>
-          <Text style={[styles.arrow, { color: textColor }]}>{"▽"}</Text>
+          <Text style={styles.arrow}>{"▽"}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onToday} style={[styles.todayButton, { backgroundColor: theme === 'dark' ? '#555' : '#ddd' }]}>
-          <Text style={[styles.today, { color: textColor }]}>Today</Text>
+        <TouchableOpacity onPress={onToday} style={styles.todayButton}>
+          <Text style={styles.today}>Today</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -86,17 +75,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 5,
     marginBottom: 20,
+    backgroundColor: '#fff', // Світлий фон
   },
   timeContainer: {
-    alignItems: 'right',
+    alignItems: 'flex-end', // поправив alignItems з 'right' на 'flex-end'
     marginBottom: 10,
   },
   time: {
     fontSize: 40,
+    color: '#000', // Чорний текст
   },
   day: {
     fontSize: 12,
     fontWeight: 'normal',
+    color: '#000',
   },
   mainContent: {
     flexDirection: 'row',
@@ -105,20 +97,24 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
+    color: '#000',
   },
   todayHighlight: {
     fontWeight: 'bold',
   },
   arrow: {
     fontSize: 25,
+    color: '#000',
   },
   todayButton: {
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 5,
+    backgroundColor: '#ddd',
   },
   today: {
     fontSize: 18,
+    color: '#000',
   },
 });
 

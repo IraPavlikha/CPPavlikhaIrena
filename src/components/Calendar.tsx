@@ -1,48 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  Dimensions,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
-import {
-  addMonths,
-  subMonths,
-  startOfMonth,
-  getDay,
-  getDaysInMonth,
-  format,
-} from 'date-fns';
-import { uk, enUS } from 'date-fns/locale';
-
+import { View, Text, StyleSheet, Modal, Dimensions } from 'react-native';
+import { addMonths, subMonths, startOfMonth, getDay, getDaysInMonth, format } from 'date-fns';
 import Header from './Header';
 import Day from './Day';
 import TaskList from './TaskList';
 
-import { useLanguage } from './LanguageContext'; // <-- імпорт контексту
-
 const { width, height } = Dimensions.get('window');
 
-const locales = { uk, enUS };
-
-const Calendar: React.FC<{ theme: string }> = ({ theme }) => {
-  const { language, setLanguage } = useLanguage();
-
+const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [currentMonth, setCurrentMonth] = useState('');
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(format(currentDate, 'MMMM'));
+  const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-
-  const locale = language === 'uk' ? uk : enUS;
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   useEffect(() => {
-    setCurrentMonth(format(currentDate, 'MMMM', { locale }));
+    setCurrentMonth(format(currentDate, 'MMMM'));
     setCurrentYear(currentDate.getFullYear());
-  }, [currentDate, locale]);
+  }, [currentDate]);
 
   const generateCalendarDays = (date: Date) => {
     const startOfCurrentMonth = startOfMonth(date);
@@ -72,42 +47,19 @@ const Calendar: React.FC<{ theme: string }> = ({ theme }) => {
   const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const handleToday = () => setCurrentDate(new Date());
 
-  const getWeekDays = (locale: Locale) => {
-    const baseDate = new Date(2021, 0, 3);
-    return Array.from({ length: 7 }).map((_, i) =>
-      format(new Date(baseDate.getTime() + i * 86400000), 'EE', { locale }),
-    );
-  };
-
-  const weekDays = getWeekDays(locale);
   const days = generateCalendarDays(currentDate);
+  const weekDays = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
   const handleDayPress = (day: number) => {
     if (day > 0) {
-      const selectedDate = new Date(currentYear, currentDate.getMonth(), day);
+      const selectedDate = new Date(currentYear, new Date().getMonth(), day);
       setSelectedDay(selectedDate);
       setIsModalVisible(true);
     }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme === 'light' ? '#f5f5f5' : '#222' }]}>
-      {/* Перемикач мов */}
-      <View style={styles.languageSwitcher}>
-        <TouchableOpacity
-          style={[styles.langButton, language === 'uk' && styles.langButtonActive]}
-          onPress={() => setLanguage('uk')}
-        >
-          <Text style={[styles.langText, language === 'uk' && styles.langTextActive]}>Українська</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.langButton, language === 'en' && styles.langButtonActive]}
-          onPress={() => setLanguage('en')}
-        >
-          <Text style={[styles.langText, language === 'en' && styles.langTextActive]}>English</Text>
-        </TouchableOpacity>
-      </View>
-
+    <View style={[styles.container]}>
       <Header
         month={currentMonth}
         year={currentYear}
@@ -115,13 +67,12 @@ const Calendar: React.FC<{ theme: string }> = ({ theme }) => {
         onNextMonth={handleNextMonth}
         onToday={handleToday}
         currentDate={currentDate}
-        theme={theme}
       />
 
       <View style={styles.weekdaysContainer}>
         {weekDays.map((day, index) => (
           <View key={index} style={styles.weekday}>
-            <Text style={[styles.weekdayText, { color: theme === 'light' ? '#000' : '#fff' }]}>{day}</Text>
+            <Text style={styles.weekdayText}>{day}</Text>
           </View>
         ))}
       </View>
@@ -134,12 +85,11 @@ const Calendar: React.FC<{ theme: string }> = ({ theme }) => {
             isCurrentMonth={day > 0}
             isToday={
               day === new Date().getDate() &&
-              currentMonth === format(new Date(), 'MMMM', { locale }) &&
+              currentMonth === format(new Date(), 'MMMM') &&
               currentYear === new Date().getFullYear()
             }
             isInRange={false}
             onPress={() => handleDayPress(day)}
-            theme={theme}
           />
         ))}
       </View>
@@ -151,8 +101,8 @@ const Calendar: React.FC<{ theme: string }> = ({ theme }) => {
           transparent={true}
           onRequestClose={() => setIsModalVisible(false)}
         >
-          <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }]}>
-            <View style={[styles.modalContent, { backgroundColor: theme === 'light' ? '#fff' : '#333' }]}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
               <TaskList day={selectedDay} onClose={() => setIsModalVisible(false)} />
             </View>
           </View>
@@ -162,36 +112,12 @@ const Calendar: React.FC<{ theme: string }> = ({ theme }) => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 20,
     paddingHorizontal: 10,
-  },
-  languageSwitcher: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  langButton: {
-    marginHorizontal: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#888',
-  },
-  langButtonActive: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
-  },
-  langText: {
-    color: '#888',
-    fontWeight: '600',
-  },
-  langTextActive: {
-    color: '#fff',
+    backgroundColor: '#f5f5f5', // світла тема фіксовано
   },
   weekdaysContainer: {
     flexDirection: 'row',
@@ -205,6 +131,7 @@ const styles = StyleSheet.create({
   weekdayText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#000',
   },
   grid: {
     flexDirection: 'row',
@@ -216,10 +143,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   modalContent: {
     width: width * 0.75,
     height: height * 0.75,
+    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 20,
     shadowColor: '#000',
@@ -227,11 +156,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
 

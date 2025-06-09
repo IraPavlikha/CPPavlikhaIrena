@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { format } from 'date-fns';
-import { useTheme } from './ThemeContext';
-import { useLanguage } from './LanguageContext'; // імпорт контексту мови
 
 interface Task {
   id: string;
@@ -16,16 +14,13 @@ interface TaskListProps {
 }
 
 const TaskList: React.FC<TaskListProps> = ({ day, onClose }) => {
-  const { theme } = useTheme();
-  const { t } = useLanguage();
-
   const formattedDate = format(day, 'yyyy-MM-dd');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editedText, setEditedText] = useState('');
 
-  const styles = getStyles(theme);
+  const styles = getStyles();
 
   useEffect(() => {
     loadTasks();
@@ -34,24 +29,22 @@ const TaskList: React.FC<TaskListProps> = ({ day, onClose }) => {
   const loadTasks = async () => {
     try {
       const user = await AsyncStorage.getItem('currentUser');
-      if (!user) return;
       const key = `tasks-${user}-${formattedDate}`;
       const storedTasks = await AsyncStorage.getItem(key);
       if (storedTasks) setTasks(JSON.parse(storedTasks));
       else setTasks([]);
     } catch (error) {
-      console.error('Error loading tasks', error);
+      console.error('Помилка при завантаженні завдань', error);
     }
   };
 
   const saveTasks = async (updatedTasks: Task[]) => {
     try {
       const user = await AsyncStorage.getItem('currentUser');
-      if (!user) return;
       const key = `tasks-${user}-${formattedDate}`;
       await AsyncStorage.setItem(key, JSON.stringify(updatedTasks));
     } catch (error) {
-      console.error('Error saving tasks', error);
+      console.error('Помилка при збереженні завдань', error);
     }
   };
 
@@ -90,7 +83,7 @@ const TaskList: React.FC<TaskListProps> = ({ day, onClose }) => {
 
   return (
     <View style={styles.modal}>
-      <Text style={styles.title}>{t('tasksFor')} {format(day, 'dd.MM.yyyy')}</Text>
+      <Text style={styles.title}>Завдання на {format(day, 'dd.MM.yyyy')}</Text>
 
       <FlatList
         data={tasks}
@@ -105,22 +98,23 @@ const TaskList: React.FC<TaskListProps> = ({ day, onClose }) => {
             </View>
           </TouchableOpacity>
         )}
-        ListEmptyComponent={<Text style={styles.empty}>{t('noTasks')}</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>Завдань немає</Text>}
       />
 
       <View style={styles.inputContainer}>
         <TextInput
-          placeholder={t('newTask')}
+          placeholder="Нове завдання"
           value={newTask}
           onChangeText={setNewTask}
           style={styles.input}
-          placeholderTextColor={theme === 'dark' ? '#aaa' : '#555'}
+          placeholderTextColor="#555"
         />
-        <Button title={t('add')} onPress={handleAddTask} />
+        <Button title="Додати" onPress={handleAddTask} />
       </View>
 
-      <Button title={t('close')} onPress={onClose} color={theme === 'dark' ? '#aaa' : '#666'} />
+      <Button title="Закрити" onPress={onClose} color="#666" />
 
+      {/* Модальне вікно для редагування завдання */}
       <Modal
         visible={selectedTask !== null}
         animationType="slide"
@@ -129,16 +123,16 @@ const TaskList: React.FC<TaskListProps> = ({ day, onClose }) => {
       >
         <View style={styles.editOverlay}>
           <View style={styles.editModal}>
-            <Text style={styles.editTitle}>{t('edit')}</Text>
+            <Text style={styles.editTitle}>Редагування</Text>
             <TextInput
               value={editedText}
               onChangeText={setEditedText}
               style={styles.input}
-              placeholder={t('newTask')}
-              placeholderTextColor={theme === 'dark' ? '#aaa' : '#555'}
+              placeholder="Змінити завдання"
+              placeholderTextColor="#555"
             />
-            <Button title={t('save')} onPress={handleSaveEdit} />
-            <Button title={t('cancel')} onPress={() => setSelectedTask(null)} color={theme === 'dark' ? '#aaa' : '#666'} />
+            <Button title="Зберегти" onPress={handleSaveEdit} />
+            <Button title="Скасувати" onPress={() => setSelectedTask(null)} color="#666" />
           </View>
         </View>
       </Modal>
@@ -146,24 +140,24 @@ const TaskList: React.FC<TaskListProps> = ({ day, onClose }) => {
   );
 };
 
-const getStyles = (theme: 'light' | 'dark') =>
+const getStyles = () =>
   StyleSheet.create({
     modal: {
       height: '100%',
-      backgroundColor: theme === 'dark' ? '#2e2e2e' : '#fff',
+      backgroundColor: '#fff',
       borderRadius: 20,
       padding: 20,
       justifyContent: 'space-between',
     },
     title: {
       fontSize: 18,
-      color: theme === 'dark' ? '#fff' : '#000',
+      color: '#000',
       fontWeight: 'bold',
       marginBottom: 10,
       textAlign: 'center',
     },
     taskItem: {
-      backgroundColor: theme === 'dark' ? '#444' : '#eee',
+      backgroundColor: '#eee',
       padding: 10,
       marginVertical: 5,
       borderRadius: 10,
@@ -172,7 +166,7 @@ const getStyles = (theme: 'light' | 'dark') =>
       alignItems: 'center',
     },
     taskText: {
-      color: theme === 'dark' ? '#fff' : '#000',
+      color: '#000',
       fontSize: 16,
       flex: 1,
     },
@@ -191,8 +185,8 @@ const getStyles = (theme: 'light' | 'dark') =>
       marginTop: 10,
     },
     input: {
-      backgroundColor: theme === 'dark' ? '#3a3a3a' : '#f0f0f0',
-      color: theme === 'dark' ? '#fff' : '#000',
+      backgroundColor: '#f0f0f0',
+      color: '#000',
       padding: 10,
       borderRadius: 10,
       marginBottom: 10,
@@ -204,14 +198,14 @@ const getStyles = (theme: 'light' | 'dark') =>
       alignItems: 'center',
     },
     editModal: {
-      backgroundColor: theme === 'dark' ? '#2e2e2e' : '#fff',
+      backgroundColor: '#fff',
       padding: 20,
       borderRadius: 15,
       width: '80%',
     },
     editTitle: {
       fontSize: 18,
-      color: theme === 'dark' ? '#fff' : '#000',
+      color: '#000',
       marginBottom: 10,
       textAlign: 'center',
     },
