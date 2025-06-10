@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert, ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+
+const API_BASE_URL = 'http://127.0.0.1:5000/api/users';
 
 export default function AuthScreen({ onLogin }) {
   const [isRegister, setIsRegister] = useState(false);
-
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -21,15 +23,67 @@ export default function AuthScreen({ onLogin }) {
     }
   };
 
+  const savePendingRegistration = async (userData) => {
+    try {
+      const existing = await AsyncStorage.getItem('pendingRegistrations');
+      const parsed = existing ? JSON.parse(existing) : [];
+      parsed.push(userData);
+      await AsyncStorage.setItem('pendingRegistrations', JSON.stringify(parsed));
+    } catch (storageError) {
+      console.error('Помилка збереження в AsyncStorage:', storageError);
+    }
+  };
+
+  const syncPendingRegistrations = async () => {
+    const stored = await AsyncStorage.getItem('pendingRegistrations');
+    const registrations = stored ? JSON.parse(stored) : [];
+
+    const successful = [];
+
+    for (const user of registrations) {
+      try {
+        await axios.post(`${API_BASE_URL}/register`, user);
+        successful.push(user);
+      } catch (err) {
+        console.error('Синхронізація не вдалася:', err.message);
+        break; // Зупинити якщо щось пішло не так
+      }
+    }
+
+    // Оновити список, видаливши успішно синхронізованих
+    if (successful.length > 0) {
+      const remaining = registrations.filter(u => !successful.includes(u));
+      await AsyncStorage.setItem('pendingRegistrations', JSON.stringify(remaining));
+    }
+  };
+
   const handleRegister = async () => {
     if (!firstName || !lastName || !email || !phone || !password) {
       Alert.alert('Будь ласка, заповніть всі поля');
       return;
     }
-    // TODO: логіка реєстрації
-    await saveLoginStatus();
-    Alert.alert('Реєстрація успішна');
-    onLogin(true);
+
+    const userData = { firstName, lastName, email, phone, password };
+
+    try {
+      await axios.post(`${API_BASE_URL}/register`, userData);
+      await saveLoginStatus();
+      Alert.alert('Реєстрація успішна');
+      onLogin(true);
+    } catch (error) {
+      console.error('Помилка реєстрації:', error.message);
+
+      if (error.message === 'Network Error') {
+        await savePendingRegistration(userData);
+        Alert.alert(
+          'Сервер недоступний',
+          'Дані збережені локально. Вони будуть відправлені автоматично при наступному вході.'
+        );
+        onLogin(true); // Якщо хочеш одразу пускати користувача далі
+      } else {
+        Alert.alert('Помилка', error.response?.data?.message || 'Не вдалося зареєструватись');
+      }
+    }
   };
 
   const handleLogin = async () => {
@@ -37,10 +91,17 @@ export default function AuthScreen({ onLogin }) {
       Alert.alert('Будь ласка, введіть email та пароль');
       return;
     }
-    // TODO: логіка логіну
-    await saveLoginStatus();
-    Alert.alert('Вхід успішний');
-    onLogin(true);
+
+    try {
+      await axios.post(`${API_BASE_URL}/login`, { email, password });
+      await saveLoginStatus();
+      await syncPendingRegistrations();
+      Alert.alert('Вхід успішний');
+      onLogin(true);
+    } catch (error) {
+      console.error('Помилка входу:', error.message);
+      Alert.alert('Помилка', error.response?.data?.message || 'Невірний email або пароль');
+    }
   };
 
   return (
