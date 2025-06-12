@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert, ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 
-const API_BASE_URL = 'http://127.0.0.1:5000/api/users';
+const API_BASE_URL = 'http://127.0.0.1:5002/api/users';
 
 export default function AuthScreen({ onLogin }) {
   const [isRegister, setIsRegister] = useState(false);
@@ -42,15 +41,23 @@ export default function AuthScreen({ onLogin }) {
 
     for (const user of registrations) {
       try {
-        await axios.post(`${API_BASE_URL}/register`, user);
-        successful.push(user);
+        const response = await fetch(`${API_BASE_URL}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(user),
+        });
+
+        if (response.ok) {
+          successful.push(user);
+        } else {
+          throw new Error('Сервер повернув помилку');
+        }
       } catch (err) {
         console.error('Синхронізація не вдалася:', err.message);
-        break; // Зупинити якщо щось пішло не так
+        break;
       }
     }
 
-    // Оновити список, видаливши успішно синхронізованих
     if (successful.length > 0) {
       const remaining = registrations.filter(u => !successful.includes(u));
       await AsyncStorage.setItem('pendingRegistrations', JSON.stringify(remaining));
@@ -66,22 +73,32 @@ export default function AuthScreen({ onLogin }) {
     const userData = { firstName, lastName, email, phone, password };
 
     try {
-      await axios.post(`${API_BASE_URL}/register`, userData);
+      const response = await fetch(`${API_BASE_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Не вдалося зареєструватись');
+      }
+
       await saveLoginStatus();
       Alert.alert('Реєстрація успішна');
       onLogin(true);
     } catch (error) {
       console.error('Помилка реєстрації:', error.message);
 
-      if (error.message === 'Network Error') {
+      if (error.message === 'Network request failed') {
         await savePendingRegistration(userData);
         Alert.alert(
           'Сервер недоступний',
           'Дані збережені локально. Вони будуть відправлені автоматично при наступному вході.'
         );
-        onLogin(true); // Якщо хочеш одразу пускати користувача далі
+        onLogin(true);
       } else {
-        Alert.alert('Помилка', error.response?.data?.message || 'Не вдалося зареєструватись');
+        Alert.alert('Помилка', error.message);
       }
     }
   };
@@ -93,14 +110,24 @@ export default function AuthScreen({ onLogin }) {
     }
 
     try {
-      await axios.post(`${API_BASE_URL}/login`, { email, password });
+      const response = await fetch(`${API_BASE_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Невірний email або пароль');
+      }
+
       await saveLoginStatus();
       await syncPendingRegistrations();
       Alert.alert('Вхід успішний');
       onLogin(true);
     } catch (error) {
       console.error('Помилка входу:', error.message);
-      Alert.alert('Помилка', error.response?.data?.message || 'Невірний email або пароль');
+      Alert.alert('Помилка', error.message);
     }
   };
 

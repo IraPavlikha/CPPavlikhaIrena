@@ -20,7 +20,6 @@ export default function App() {
     avatarUrl: '',
   });
 
-  // Автоматичне завантаження користувача при запуску
   useEffect(() => {
     const loadUser = async () => {
       try {

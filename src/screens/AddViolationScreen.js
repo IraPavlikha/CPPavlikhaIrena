@@ -23,7 +23,6 @@ const categories = [
   { id: '9', name: 'Інше' },
 ];
 
-// Dark map style
 const mapStyle = [
   {
     "elementType": "geometry",

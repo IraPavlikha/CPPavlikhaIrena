@@ -77,12 +77,10 @@ export default function SettingsScreen({ userData, onLogout, onUpdateUser }) {
   return (
     <>
        <ScrollView style={[themeStyles.container]}>
-              {/* Header with "Налаштування" */}
               <View style={themeStyles.headerContainer}>
                 <Text style={themeStyles.headerText}>{strings.settings}</Text>
               </View>
 
-              {/* Content with proper spacing */}
               <View style={{ marginTop: 20 }}>
                 <View style={themeStyles.switchRow}>
                   <Text style={themeStyles.switchLabel}>{strings.theme}</Text>
@@ -196,15 +194,13 @@ export default function SettingsScreen({ userData, onLogout, onUpdateUser }) {
   );
 }
 
-// === СТИЛІ ===
-
 const baseStyles = {
   container: {
     flex: 1,
     padding: 20,
   },
   headerContainer: {
-    paddingTop: 50, // Extra space for camera
+    paddingTop: 50,
     paddingBottom: 20,
     borderBottomWidth: 1,
   },
@@ -283,51 +279,50 @@ const baseStyles = {
   },
 };
 
-// Світла тема
 const lightStyles = StyleSheet.create({
   ...baseStyles,
   container: {
     ...baseStyles.container,
-    backgroundColor: '#f7f7f7', // Pastel blue background
+    backgroundColor: '#f7f7f7',
   },
   headerContainer: {
     ...baseStyles.headerContainer,
-    borderBottomColor: '#d6e4f0', // Light pastel blue border
+    borderBottomColor: '#d6e4f0',
   },
   headerText: {
     ...baseStyles.headerText,
-    color: '#474747', // Soft blue
-    color: '#474747', // Soft blue
+    color: '#474747',
+    color: '#474747',
   },
   card: {
     ...baseStyles.card,
-    backgroundColor: '#f7f7f7', // Very light pastel blue
+    backgroundColor: '#f7f7f7',
   },
   name: {
     ...baseStyles.name,
-    color: '#4a6fa5', // Soft blue
+    color: '#4a6fa5',
   },
   input: {
     ...baseStyles.input,
-    borderColor: '#474747', // Light blue border
-    color: '#e3e3e3', // Soft blue
-    backgroundColor: '#efefef', // Very light blue background
+    borderColor: '#474747',
+    color: '#e3e3e3',
+    backgroundColor: '#efefef',
   },
   label: {
     ...baseStyles.label,
-    color: '#474747', // Medium blue
+    color: '#474747',
   },
   value: {
     ...baseStyles.value,
-    color: '#474747', // Soft blue
+    color: '#474747',
   },
   switchRow: {
     ...baseStyles.switchRow,
-    backgroundColor: '#e3e3e3', // Very light pastel blue
+    backgroundColor: '#e3e3e3',
   },
   switchLabel: {
     ...baseStyles.switchLabel,
-    color: '#474747', // Medium blue
+    color: '#474747',
   },
   button: {
     ...baseStyles.button,
@@ -337,73 +332,72 @@ const lightStyles = StyleSheet.create({
     color: '#fff',
   },
   saveButton: {
-    backgroundColor: '#c1c1c1', // Medium pastel blue
+    backgroundColor: '#c1c1c1',
     flex: 1,
     marginRight: 5,
   },
   cancelButton: {
-    backgroundColor: '#acacac', // Grayish pastel blue
+    backgroundColor: '#acacac',
     flex: 1,
     marginLeft: 5,
   },
   editButton: {
-    backgroundColor: '#c1c1c1', // Medium pastel blue
+    backgroundColor: '#c1c1c1',
     marginTop: 10,
   },
   calendarButton: {
-    backgroundColor: '#c1c1c1', // Medium pastel blue
+    backgroundColor: '#c1c1c1',
     marginTop: 20,
   },
   logoutButton: {
-    backgroundColor: '#ff7a7a', // Pastel red
+    backgroundColor: '#ff7a7a',
     marginTop: 30,
   },
 });
 
-// Темна тема
 const darkStyles = StyleSheet.create({
   ...baseStyles,
   container: {
     ...baseStyles.container,
-    backgroundColor: '#232323', // Dark blue background
+    backgroundColor: '#232323',
   },
   headerContainer: {
     ...baseStyles.headerContainer,
-    borderBottomColor: '#464646', // Dark blue border
+    borderBottomColor: '#464646',
   },
   headerText: {
     ...baseStyles.headerText,
-    color: '#e6e6e6', // Light blue
+    color: '#e6e6e6',
   },
   card: {
     ...baseStyles.card,
-    backgroundColor: '#323232', // Dark blue card
+    backgroundColor: '#323232',
   },
   name: {
     ...baseStyles.name,
-    color: '#8ab4f8', // Light blue
+    color: '#8ab4f8',
   },
   input: {
     ...baseStyles.input,
-    borderColor: '#3a4a5a', // Dark gray-blue border
-    color: '#e4e4e4', // Light blue text
-    backgroundColor: '#7c7c7c', // Dark blue background
+    borderColor: '#3a4a5a',
+    color: '#e4e4e4',
+    backgroundColor: '#7c7c7c',
   },
   label: {
     ...baseStyles.label,
-    color: '#8a9db5', // Light gray-blue
+    color: '#8a9db5',
   },
   value: {
     ...baseStyles.value,
-    color: '#dfdfdf', // Light blue
+    color: '#dfdfdf',
   },
   switchRow: {
     ...baseStyles.switchRow,
-    backgroundColor: '#323232', // Dark blue
+    backgroundColor: '#323232',
   },
   switchLabel: {
     ...baseStyles.switchLabel,
-    color: '#e2e2e2', // Light blue
+    color: '#e2e2e2',
   },
   button: {
     ...baseStyles.button,
@@ -413,25 +407,25 @@ const darkStyles = StyleSheet.create({
     color: '#fff',
   },
   saveButton: {
-    backgroundColor: '#404040', // Dark blue
+    backgroundColor: '#404040',
     flex: 1,
     marginRight: 5,
   },
   cancelButton: {
-    backgroundColor: '#282828', // Dark gray-blue
+    backgroundColor: '#282828',
     flex: 1,
     marginLeft: 5,
   },
   editButton: {
-    backgroundColor: '#282828', // Dark blue
+    backgroundColor: '#282828',
     marginTop: 10,
   },
   calendarButton: {
-    backgroundColor: '#282828', // Dark blue
+    backgroundColor: '#282828',
     marginTop: 20,
   },
   logoutButton: {
-    backgroundColor: '#aa3a3a', // Dark red
+    backgroundColor: '#aa3a3a',
     marginTop: 30,
   },
 });

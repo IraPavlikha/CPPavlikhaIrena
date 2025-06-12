@@ -285,7 +285,6 @@ const mapStyle = [
   }
 ];
 
-
   const renderEditableField = (title, field, value, multiline = false) => (
     <>
       <Text style={styles.sectionTitle}>{title}:</Text>
@@ -329,7 +328,6 @@ return (
       />
     </View>
 
-    {/* СПИСОК */}
     {violations.length === 0 ? (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>Ще немає створених правопорушень</Text>
@@ -342,7 +340,6 @@ return (
         contentContainerStyle={styles.listContainer}
       />
     )}
-
 
       <Modal
         animationType="slide"
